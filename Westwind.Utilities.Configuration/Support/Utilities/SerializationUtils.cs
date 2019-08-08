@@ -2,7 +2,7 @@
 /*
  **************************************************************
  *  Author: Rick Strahl 
- *          © West Wind Technologies, 2008 - 2009
+ *          ?West Wind Technologies, 2008 - 2009
  *          http://www.west-wind.com/
  * 
  * Created: 09/08/2008
@@ -35,12 +35,10 @@ using System;
 using System.IO;
 using System.Text;
 using System.Reflection;
-
 using System.Xml;
 using System.Xml.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Diagnostics;
-using System.Runtime.Serialization;
 
 namespace Westwind.Utilities
 {
@@ -49,7 +47,6 @@ namespace Westwind.Utilities
 
     internal static class SerializationUtils
     {
-
         /// <summary>
         /// Serializes an object instance to a file.
         /// </summary>
@@ -66,15 +63,16 @@ namespace Westwind.Utilities
                 XmlTextWriter writer = null;
                 try
                 {
-                    XmlSerializer serializer =
-                        new XmlSerializer(instance.GetType());
+                    var serializer = new XmlSerializer(instance.GetType());
 
                     // Create an XmlTextWriter using a FileStream.
                     Stream fs = new FileStream(fileName, FileMode.Create);
-                    writer = new XmlTextWriter(fs, new UTF8Encoding());
-                    writer.Formatting = Formatting.Indented;
-                    writer.IndentChar = ' ';
-                    writer.Indentation = 3;
+                    writer = new XmlTextWriter(fs, new UTF8Encoding())
+                    {
+                        Formatting = Formatting.Indented,
+                        IndentChar = ' ',
+                        Indentation = 3
+                    };
 
                     // Serialize using the XmlTextWriter.
                     serializer.Serialize(writer, instance);
@@ -86,8 +84,7 @@ namespace Westwind.Utilities
                 }
                 finally
                 {
-                    if (writer != null)
-                        writer.Close();
+                    writer?.Close();
                 }
             }
             else
@@ -95,7 +92,7 @@ namespace Westwind.Utilities
                 Stream fs = null;
                 try
                 {
-                    BinaryFormatter serializer = new BinaryFormatter();
+                    var serializer = new BinaryFormatter();
                     fs = new FileStream(fileName, FileMode.Create);
                     serializer.Serialize(fs, instance);
                 }
@@ -105,8 +102,7 @@ namespace Westwind.Utilities
                 }
                 finally
                 {
-                    if (fs != null)
-                        fs.Close();
+                    fs?.Close();
                 }
             }
 
@@ -130,8 +126,7 @@ namespace Westwind.Utilities
 
             try
             {
-                XmlSerializer serializer =
-                    new XmlSerializer(instance.GetType());
+                var serializer = new XmlSerializer(instance.GetType());
 
                 // Create an XmlTextWriter using a FileStream.
                 writer.Formatting = Formatting.Indented;
@@ -145,8 +140,7 @@ namespace Westwind.Utilities
             {            
                 Debug.Write("SerializeObject failed with : " + ex.GetBaseException().Message + "\r\n" + (ex.InnerException != null ? ex.InnerException.Message : ""), "West Wind");
 
-                if (throwExceptions)
-                    throw;
+                if (throwExceptions) throw;
 
                 retVal = false;
             }
@@ -176,9 +170,9 @@ namespace Westwind.Utilities
         public static bool SerializeObject(object instance, out string xmlResultString, bool throwExceptions)
         {            
             xmlResultString = string.Empty;
-            MemoryStream ms = new MemoryStream();
+            var ms = new MemoryStream();
 
-            XmlTextWriter writer = new XmlTextWriter(ms, new UTF8Encoding());
+            var writer = new XmlTextWriter(ms, new UTF8Encoding());
 
             if (!SerializeObject(instance, writer,throwExceptions))
             {
@@ -207,9 +201,10 @@ namespace Westwind.Utilities
             bool retVal = true;
 
             MemoryStream ms = null;
+
             try
             {
-                BinaryFormatter serializer = new BinaryFormatter();
+                var serializer = new BinaryFormatter();
                 ms = new MemoryStream();
                 serializer.Serialize(ms, instance);
             }
@@ -218,13 +213,11 @@ namespace Westwind.Utilities
                 Debug.Write("SerializeObject failed with : " + ex.GetBaseException().Message, "West Wind");
                 retVal = false;
 
-                if (throwExceptions)
-                    throw;
+                if (throwExceptions) throw;
             }
             finally
             {
-                if (ms != null)
-                    ms.Close();
+                ms?.Close();
             }
 
             resultBuffer = ms.ToArray();
@@ -247,27 +240,19 @@ namespace Westwind.Utilities
         /// </remarks>
         public static string SerializeObjectToString(object instance, bool throwExceptions = false)
         {
-            string xmlResultString = string.Empty;
-
-            if (!SerializeObject(instance, out xmlResultString, throwExceptions))
-                return null;
+            if (!SerializeObject(instance, out string xmlResultString, throwExceptions)) return null;
 
             return xmlResultString;
         }
 
         public static byte[] SerializeObjectToByteArray(object instance, bool throwExceptions = false)
         {
-            byte[] byteResult = null;
+            if (!SerializeObject(instance, out byte[] byteResult)) return null;
 
-            if ( !SerializeObject(instance, out byteResult) )
-                return null;
-                        
             return byteResult;
         }
 
-
-
-                /// <summary>
+        /// <summary>
         /// Deserializes an object from file and returns a reference.
         /// </summary>
         /// <param name="fileName">name of the file to serialize to</param>
@@ -289,18 +274,17 @@ namespace Westwind.Utilities
         /// <returns>Instance of the deserialized object or null. Must be cast to your object type</returns>
         public static object DeSerializeObject(string fileName, Type objectType, bool binarySerialization, bool throwExceptions)
         {
-            object instance = null;
+            object instance;
 
             if (!binarySerialization)
             {
-
                 XmlReader reader = null;
-                XmlSerializer serializer = null;
                 FileStream fs = null;
+
                 try
                 {
                     // Create an instance of the XmlSerializer specifying type and namespace.
-                    serializer = new XmlSerializer(objectType);
+                    var serializer = new XmlSerializer(objectType);
 
                     // A FileStream is needed to read the XML document.
                     fs = new FileStream(fileName, FileMode.Open, FileAccess.Read);
@@ -310,33 +294,25 @@ namespace Westwind.Utilities
                 }
                 catch(Exception ex)
                 {
-                    if (throwExceptions)
-                        throw;
+                    if (throwExceptions) throw;
 
-                    string message = ex.Message;
                     return null;
                 }
                 finally
                 {
-                    if (fs != null)
-                        fs.Close();
-
-                    if (reader != null)
-                        reader.Close();
+                    fs?.Close();
+                    reader?.Close();
                 }
             }
             else
             {
-
-                BinaryFormatter serializer = null;
                 FileStream fs = null;
 
                 try
                 {
-                    serializer = new BinaryFormatter();
+                    var serializer = new BinaryFormatter();
                     fs = new FileStream(fileName, FileMode.Open, FileAccess.Read);
                     instance = serializer.Deserialize(fs);
-
                 }
                 catch
                 {
@@ -344,8 +320,7 @@ namespace Westwind.Utilities
                 }
                 finally
                 {
-                    if (fs != null)
-                        fs.Close();
+                    fs?.Close();
                 }
             }
 
@@ -360,16 +335,16 @@ namespace Westwind.Utilities
         /// <returns></returns>
         public static object DeSerializeObject(XmlReader reader, Type objectType)
         {
-            XmlSerializer serializer = new XmlSerializer(objectType);
-            object Instance = serializer.Deserialize(reader);
+            var serializer = new XmlSerializer(objectType);
+            object instance = serializer.Deserialize(reader);
             reader.Close();
 
-            return Instance;
+            return instance;
         }
 
         public static object DeSerializeObject(string xml, Type objectType)
         {
-            XmlTextReader reader = new XmlTextReader(xml, XmlNodeType.Document, null);
+            var reader = new XmlTextReader(xml, XmlNodeType.Document, null);
             return DeSerializeObject(reader, objectType);
         }
 
@@ -382,31 +357,27 @@ namespace Westwind.Utilities
         /// <returns></returns>
         public static object DeSerializeObject(byte[] buffer, Type objectType, bool throwExceptions = false)
         {
-            BinaryFormatter serializer = null;
             MemoryStream ms = null;
-            object Instance = null;
+            object instance;
 
             try
             {
-                serializer = new BinaryFormatter();
+                var serializer = new BinaryFormatter();
                 ms = new MemoryStream(buffer);
-                Instance = serializer.Deserialize(ms);
-
+                instance = serializer.Deserialize(ms);
             }
             catch
             {
-                if (throwExceptions)
-                    throw;
+                if (throwExceptions) throw;
 
                 return null;
             }
             finally
             {
-                if (ms != null)
-                    ms.Close();
+                ms?.Close();
             }
 
-            return Instance;
+            return instance;
         }
 
 
@@ -429,7 +400,7 @@ namespace Westwind.Utilities
                 {
                     try
                     {
-                        output += property.Name + ":" + property.GetValue(instanc, null).ToString() + separator;
+                        output += property.Name + ":" + property.GetValue(instanc, null) + separator;
                     }
                     catch
                     {
@@ -444,7 +415,7 @@ namespace Westwind.Utilities
                 {
                     try
                     {
-                        output = output + field.Name + ": " + field.GetValue(instanc).ToString() + separator;
+                        output = output + field.Name + ": " + field.GetValue(instanc) + separator;
                     }
                     catch
                     {

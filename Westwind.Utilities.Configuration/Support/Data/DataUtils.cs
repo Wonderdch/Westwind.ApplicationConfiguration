@@ -2,7 +2,7 @@
 /*
  **************************************************************
  *  Author: Rick Strahl 
- *          © West Wind Technologies, 2009
+ *          ?West Wind Technologies, 2009
  *          http://www.west-wind.com/
  * 
  * Created: 09/12/2009
@@ -227,38 +227,38 @@ namespace Westwind.Utilities
         {
             string[] excluded = null;
             if (!string.IsNullOrEmpty(excludedProperties))
-                excluded = excludedProperties.Split(new char[1] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-
-            MemberInfo[] miT = target.GetType().GetMembers(memberAccess);
-            foreach (MemberInfo Field in miT)
             {
-                string name = Field.Name;
+                excluded = excludedProperties.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            }
+
+            MemberInfo[] miTarget = target.GetType().GetMembers(memberAccess);
+            foreach (MemberInfo field in miTarget)
+            {
+                string name = field.Name;
 
                 // Skip over any property exceptions
-                if (!string.IsNullOrEmpty(excludedProperties) &&
-                    excluded.Contains(name))
+                if (!string.IsNullOrEmpty(excludedProperties) && excluded.Contains(name))
                     continue;
 
-                if (Field.MemberType == MemberTypes.Field)
+                if (field.MemberType == MemberTypes.Field)
                 {
-                    FieldInfo SourceField = source.GetType().GetField(name);
-                    if (SourceField == null)
-                        continue;
+                    FieldInfo sourceField = source.GetType().GetField(name);
+                    if (sourceField == null) continue;
 
-                    object SourceValue = SourceField.GetValue(source);
-                    ((FieldInfo)Field).SetValue(target, SourceValue);
+                    object sourceValue = sourceField.GetValue(source);
+                    ((FieldInfo)field).SetValue(target, sourceValue);
                 }
-                else if (Field.MemberType == MemberTypes.Property)
+                else if (field.MemberType == MemberTypes.Property)
                 {
-                    PropertyInfo piTarget = Field as PropertyInfo;
-                    PropertyInfo SourceField = source.GetType().GetProperty(name, memberAccess);
-                    if (SourceField == null)
-                        continue;
+                    PropertyInfo piSource = source.GetType().GetProperty(name, memberAccess);
+                    if (piSource == null) continue;
 
-                    if (piTarget.CanWrite && SourceField.CanRead)
+                    PropertyInfo piTarget = field as PropertyInfo;
+
+                    if (piTarget != null && piTarget.CanWrite && piSource.CanRead)
                     {
-                        object SourceValue = SourceField.GetValue(source, null);
-                        piTarget.SetValue(target, SourceValue, null);
+                        object sourceValue = piSource.GetValue(source, null);
+                        piTarget.SetValue(target, sourceValue, null);
                     }
                 }
             }

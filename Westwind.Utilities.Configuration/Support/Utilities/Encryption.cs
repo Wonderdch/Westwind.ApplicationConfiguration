@@ -2,7 +2,7 @@
 /*
  **************************************************************
  *  Author: Rick Strahl 
- *          © West Wind Technologies, 2009
+ *          ?West Wind Technologies, 2009
  *          http://www.west-wind.com/
  * 
  * Created: 09/12/2009
@@ -39,112 +39,113 @@ using System.IO.Compression;
 
 namespace Westwind.Utilities
 {
-	/// <summary>
-	/// A simple encryption class that can be used to two-way encode/decode strings and byte buffers
-	/// with single method calls.
-	/// </summary>
-	internal class Encryption
-	{
-		/// <summary>
-		/// Replace this value with some unique key of your own
-		/// Best set this in your App start up in a Static constructor
-		/// </summary>
-		public static string Key = "0a1f131c";
+    /// <summary>
+    /// A simple encryption class that can be used to two-way encode/decode strings and byte buffers
+    /// with single method calls.
+    /// </summary>
+    internal class Encryption
+    {
+        /// <summary>
+        /// Replace this value with some unique key of your own
+        /// Best set this in your App start up in a Static constructor
+        /// </summary>
+        public static string Key = "0a1f131c";
 
-		/// <summary>
-		/// Encodes a stream of bytes using DES encryption with a pass key. Lowest level method that 
-		/// handles all work.
-		/// </summary>
-		/// <param name="InputString"></param>
-		/// <param name="EncryptionKey"></param>
-		/// <returns></returns>
-		public static byte[] EncryptBytes(byte[] InputString, string EncryptionKey) 
-		{
-			if (EncryptionKey == null)
-				EncryptionKey = Key;
+        /// <summary>
+        /// Encodes a stream of bytes using DES encryption with a pass key. Lowest level method that 
+        /// handles all work.
+        /// </summary>
+        /// <param name="inputString"></param>
+        /// <param name="encryptionKey"></param>
+        /// <returns></returns>
+        public static byte[] EncryptBytes(byte[] inputString, string encryptionKey)
+        {
+            if (encryptionKey == null) encryptionKey = Key;
 
-			TripleDESCryptoServiceProvider des =  new TripleDESCryptoServiceProvider();
-			MD5CryptoServiceProvider hashmd5 = new MD5CryptoServiceProvider();
+            var des = new TripleDESCryptoServiceProvider();
+            var hashmd5 = new MD5CryptoServiceProvider();
 
-			des.Key = hashmd5.ComputeHash(Encoding.ASCII.GetBytes(EncryptionKey));
-			des.Mode = CipherMode.ECB;
-			
-			ICryptoTransform Transform = des.CreateEncryptor();
+            des.Key = hashmd5.ComputeHash(Encoding.ASCII.GetBytes(encryptionKey));
+            des.Mode = CipherMode.ECB;
 
-			byte[] Buffer = InputString;
-			return Transform.TransformFinalBlock(Buffer,0,Buffer.Length);
-		}
-		
-		/// <summary>
-		/// Encrypts a string into bytes using DES encryption with a Passkey. 
-		/// </summary>
-		/// <param name="InputString"></param>
-		/// <param name="EncryptionKey"></param>
-		/// <returns></returns>
-		public static byte[] EncryptBytes(string DecryptString, string EncryptionKey) 
-		{
-			return EncryptBytes(Encoding.ASCII.GetBytes(DecryptString),EncryptionKey);
-		}
+            // ¥¥Ω®º”√‹∆˜∂‘œÛ
+            ICryptoTransform transform = des.CreateEncryptor();
 
-		/// <summary>
-		/// Encrypts a string using Triple DES encryption with a two way encryption key.String is returned as Base64 encoded value
-		/// rather than binary.
-		/// </summary>
-		/// <param name="InputString"></param>
-		/// <param name="EncryptionKey"></param>
-		/// <returns></returns>
-		public static string EncryptString(string InputString, string EncryptionKey) 
-		{
-			return Convert.ToBase64String( EncryptBytes(Encoding.ASCII.GetBytes(InputString),EncryptionKey) );
-		}
+            byte[] buffer = inputString;
+            return transform.TransformFinalBlock(buffer, 0, buffer.Length);
+        }
 
+        /// <summary>
+        /// Encrypts a string into bytes using DES encryption with a Passkey. 
+        /// </summary>
+        /// <param name="InputString"></param>
+        /// <param name="EncryptionKey"></param>
+        /// <returns></returns>
+        public static byte[] EncryptBytes(string DecryptString, string EncryptionKey)
+        {
+            return EncryptBytes(Encoding.ASCII.GetBytes(DecryptString), EncryptionKey);
+        }
 
-		
-		/// <summary>
-		/// Decrypts a Byte array from DES with an Encryption Key.
-		/// </summary>
-		/// <param name="DecryptBuffer"></param>
-		/// <param name="EncryptionKey"></param>
-		/// <returns></returns>
-		public static byte[] DecryptBytes(byte[] DecryptBuffer, string EncryptionKey) 
-		{
-            if (DecryptBuffer == null || DecryptBuffer.Length == 0)
-                return null;
+        /// <summary>
+        /// Encrypts a string using Triple DES encryption with a two way encryption key.
+        /// String is returned as Base64 encoded value rather than binary.
+        /// </summary>
+        /// <param name="inputString"></param>
+        /// <param name="encryptionKey"></param>
+        /// <returns></returns>
+        public static string EncryptString(string inputString, string encryptionKey)
+        {
+            return Convert.ToBase64String(EncryptBytes(Encoding.ASCII.GetBytes(inputString), encryptionKey));
+        }
 
-			if (EncryptionKey == null)
-				EncryptionKey = Key;
+        /// <summary>
+        /// Decrypts a Byte array from DES with an Encryption Key.
+        /// </summary>
+        /// <param name="decryptBuffer"></param>
+        /// <param name="encryptionKey"></param>
+        /// <returns></returns>
+        public static byte[] DecryptBytes(byte[] decryptBuffer, string encryptionKey)
+        {
+            if (decryptBuffer == null || decryptBuffer.Length == 0) return null;
 
-			TripleDESCryptoServiceProvider des =  new TripleDESCryptoServiceProvider();
-			MD5CryptoServiceProvider hashmd5 = new MD5CryptoServiceProvider();
+            if (encryptionKey == null) encryptionKey = Key;
 
-			des.Key = hashmd5.ComputeHash(Encoding.ASCII.GetBytes(EncryptionKey));
-			des.Mode = CipherMode.ECB;
+            var des = new TripleDESCryptoServiceProvider();
+            var hashmd5 = new MD5CryptoServiceProvider();
 
-			ICryptoTransform Transform = des.CreateDecryptor();
-			
-			return  Transform.TransformFinalBlock(DecryptBuffer,0,DecryptBuffer.Length);
-		}
-		
-		public static byte[] DecryptBytes(string DecryptString, string EncryptionKey) 
-		{	
-				return DecryptBytes(Convert.FromBase64String(DecryptString),EncryptionKey);
-		}
+            des.Key = hashmd5.ComputeHash(Encoding.ASCII.GetBytes(encryptionKey));
+            des.Mode = CipherMode.ECB;
 
-		/// <summary>
-		/// Decrypts a string using DES encryption and a pass key that was used for 
-		/// encryption.
-		/// <seealso>Class wwEncrypt</seealso>
-		/// </summary>
-		/// <param name="DecryptString"></param>
-		/// <param name="EncryptionKey"></param>
-		/// <returns>String</returns>
-		public static string DecryptString(string DecryptString, string EncryptionKey) 
-		{
-			try 
-			{
-				return Encoding.ASCII.GetString( DecryptBytes(Convert.FromBase64String(DecryptString),EncryptionKey));
-			}
-			catch { return string.Empty; }  // Probably not encoded
+            // ¥¥Ω®Ω‚√‹∆˜∂‘œÛ
+            ICryptoTransform transform = des.CreateDecryptor();
+
+            return transform.TransformFinalBlock(decryptBuffer, 0, decryptBuffer.Length);
+        }
+
+        public static byte[] DecryptBytes(string DecryptString, string EncryptionKey)
+        {
+            return DecryptBytes(Convert.FromBase64String(DecryptString), EncryptionKey);
+        }
+
+        /// <summary>
+        /// Decrypts a string using DES encryption and a pass key that was used for 
+        /// encryption.
+        /// <seealso>Class wwEncrypt</seealso>
+        /// </summary>
+        /// <param name="decryptString"></param>
+        /// <param name="encryptionKey"></param>
+        /// <returns>String</returns>
+        public static string DecryptString(string decryptString, string encryptionKey)
+        {
+            try
+            {
+                return Encoding.ASCII.GetString(DecryptBytes(Convert.FromBase64String(decryptString), encryptionKey));
+            }
+            catch
+            {
+                // Probably not encoded
+                return string.Empty;
+            }
         }
 
 
@@ -183,7 +184,7 @@ namespace Westwind.Utilities
         {
             if (plainText == null)
                 return null;
-            
+
             // If salt is not specified, generate it on the fly.
             if (saltBytes == null)
             {
@@ -276,7 +277,7 @@ namespace Westwind.Utilities
         }
 
 
-        
+
         /// <summary>
         /// GZip encodes a memory buffer to a compressed memory buffer
         /// </summary>
@@ -339,6 +340,6 @@ namespace Westwind.Utilities
 
             return true;
         }
-        
+
     }
 }

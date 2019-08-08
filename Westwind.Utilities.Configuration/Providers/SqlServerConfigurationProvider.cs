@@ -2,7 +2,7 @@
 /*
  **************************************************************
  *  Author: Rick Strahl 
- *          © West Wind Technologies, 2009-2013
+ *          ?West Wind Technologies, 2009-2013
  *          http://www.west-wind.com/
  * 
  * Created: 09/12/2009
@@ -53,40 +53,22 @@ namespace Westwind.Utilities.Configuration
     public class SqlServerConfigurationProvider<TAppConfiguration> : ConfigurationProviderBase<TAppConfiguration>
         where TAppConfiguration : AppConfiguration, new()
     {
-
         /// <summary>
         /// The raw SQL connection string or connectionstrings name
         /// for the database connection.
         /// </summary>
-        public string ConnectionString
-        {
-            get { return _ConnectionString; }
-            set { _ConnectionString = value; }
-        }
-        private string _ConnectionString = string.Empty;
+        public string ConnectionString { get; set; } = string.Empty;
 
         /// <summary>
         /// The data provider used to access the database
         /// </summary>
-        public string ProviderName
-        {
-            get { return _ProviderName; }
-            set { _ProviderName = value; }
-        }
-        private string _ProviderName = "System.Data.SqlClient";
-        
+        public string ProviderName { get; set; } = "System.Data.SqlClient";
 
         /// <summary>
         /// Table in the database that holds configuration data
         /// Table must have ID(int) and ConfigData (nText) fields
         /// </summary>
-        public string Tablename
-        {
-            get { return _Tablename; }
-            set { _Tablename = value; }
-        }
-        private string _Tablename = "ConfigurationSettings";
-
+        public string Tablename { get; set; } = "ConfigurationSettings";
 
         /// <summary>
         /// The key of the record into which the config
@@ -97,13 +79,7 @@ namespace Westwind.Utilities.Configuration
         /// this provider before calling the Read()/Write()
         /// methods.
         /// </summary>
-        public int Key
-        {
-            get { return _Key; }
-            set { _Key = value; }
-        }
-        private int _Key = 1;
-      
+        public int Key { get; set; } = 1;
 
         /// <summary>
         /// Reads configuration data into a new instance from SQL Server
@@ -115,7 +91,7 @@ namespace Westwind.Utilities.Configuration
         {
             using (SqlDataAccess data = new SqlDataAccess(ConnectionString, ProviderName))
             {
-                string sql = "select * from [" + Tablename + "] where id=" + Key.ToString();
+                string sql = $"SELECT * FROM [{Tablename}] WHERE id={Key}";
 
                 DbDataReader reader = null;
                 try
@@ -160,9 +136,7 @@ namespace Westwind.Utilities.Configuration
                     // SQL CE Table doesn't exist
                     if (dbEx.ErrorCode == -2147467259)
                     {
-                        sql = String.Format(
-                            @"CREATE TABLE [{0}] ( [id] [int] , [ConfigData] [ntext] )",
-                            Tablename);
+                        sql = $@"CREATE TABLE [{Tablename}] ( [id] [int] , [ConfigData] [ntext] )";
                         try
                         {
                             data.ExecuteNonQuery(sql);
@@ -236,9 +210,7 @@ namespace Westwind.Utilities.Configuration
         {
             SqlDataAccess data = new SqlDataAccess(ConnectionString,ProviderName);
 
-            string sql = String.Format(
-                "Update [{0}] set ConfigData=@ConfigData where id={1}", 
-                Tablename, Key);
+            string sql = $"UPDATE [{Tablename}] SET ConfigData = @ConfigData WHERE id = {Key}";
             
             string xml = WriteAsString(config);
 

@@ -2,7 +2,7 @@
 /*
  **************************************************************
  *  Author: Rick Strahl 
- *          © West Wind Technologies, 2009-2013
+ *          ?West Wind Technologies, 2009-2013
  *          http://www.west-wind.com/
  * 
  * Created: 09/12/2009
@@ -47,41 +47,30 @@ namespace Westwind.Utilities.Configuration
     public class XmlFileConfigurationProvider<TAppConfiguration> : ConfigurationProviderBase<TAppConfiguration>
         where TAppConfiguration: AppConfiguration, new()
     {
-
         /// <summary>
         /// Optional - the Configuration file where configuration settings are
         /// stored in. If not specified uses the default Configuration Manager
         /// and its default store.
         /// </summary>
-        public string XmlConfigurationFile
-        {
-            get { return _XmlConfigurationFile; }
-            set { _XmlConfigurationFile = value; }
-        }
-        private string _XmlConfigurationFile = string.Empty;
+        public string XmlConfigurationFile { get; set; } = string.Empty;
 
-        
-        public bool UseBinarySerialization
-        {
-          get { return _UseBinarySerialization; }
-          set { _UseBinarySerialization = value; }
-        }
-        private bool _UseBinarySerialization = false;
-
+        public bool UseBinarySerialization { get; set; } = false;
 
         public override bool Read(AppConfiguration config)
         {
-            var newConfig = SerializationUtils.DeSerializeObject(XmlConfigurationFile,typeof(TAppConfiguration),UseBinarySerialization) as TAppConfiguration;
+            var newConfig =
+                SerializationUtils.DeSerializeObject(XmlConfigurationFile, typeof(TAppConfiguration), UseBinarySerialization) as TAppConfiguration;
 
-            //If the file exists, but it could not be read (most likely due to badly formed XML), don't overwrite it.
+            // If the file exists, but it could not be read (most likely due to badly formed XML), don't overwrite it.
             if (File.Exists(XmlConfigurationFile) && newConfig == null)
+            {
                 throw new ArgumentException(string.Format(Resources.InvalidXmlConfigurationFile,XmlConfigurationFile));
+            }
 
             if (newConfig == null)
             {
-                // create a new file and write it
-                if(Write(config))
-                    return true;
+                // Create a new file and write it
+                if(Write(config)) return true;
 
                 return false;
             }
@@ -101,8 +90,8 @@ namespace Westwind.Utilities.Configuration
         public override TAppConfig Read<TAppConfig>()
         {
             var result = SerializationUtils.DeSerializeObject(XmlConfigurationFile,typeof(TAppConfig),UseBinarySerialization) as TAppConfig;
-            if (result != null)
-                DecryptFields(result);
+
+            if (result != null) DecryptFields(result);
 
             return result;
         }
@@ -112,7 +101,7 @@ namespace Westwind.Utilities.Configuration
         /// </summary>
         /// <param name="config"></param>
         /// <returns></returns>
-        public override bool  Write(AppConfiguration config)
+        public override bool Write(AppConfiguration config)
         {
             EncryptFields(config);
             
@@ -124,5 +113,4 @@ namespace Westwind.Utilities.Configuration
             return result;
  	    }
     }
-
 }

@@ -2,7 +2,7 @@
 /*
  **************************************************************
  *  Author: Rick Strahl 
- *          © West Wind Technologies, 2008 - 2009
+ *          ?West Wind Technologies, 2008 - 2009
  *          http://www.west-wind.com/
  * 
  * Created: 09/08/2008
@@ -36,12 +36,10 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Web;
 using System.Globalization;
-using System.Linq;
 
 namespace Westwind.Utilities
-{       
+{
 
     /// <summary>
     /// String utility class that provides a host of string related operations
@@ -113,7 +111,6 @@ namespace Westwind.Utilities
                 PreTag = true;
             }
 
-
             // fix up line breaks into <br><p>
             text = DisplayMemo(HtmlEncode(text)); //HttpUtility.HtmlEncode(Text));
 
@@ -172,20 +169,20 @@ namespace Westwind.Utilities
             return sb.ToString();
         }
 
-
-
         /// <summary>
         /// Extracts a string from between a pair of delimiters. Only the first 
         /// instance is found.
         /// </summary>
         /// <param name="source">Input String to work on</param>
-        /// <param name="StartDelim">Beginning delimiter</param>
+        /// <param name="beginDelim"></param>
         /// <param name="endDelim">ending delimiter</param>
-        /// <param name="CaseInsensitive">Determines whether the search for delimiters is case sensitive</param>
+        /// <param name="caseSensitive"></param>
+        /// <param name="allowMissingEndDelimiter"></param>
+        /// <param name="returnDelimiters"></param>
         /// <returns>Extracted string or ""</returns>
-        public static string ExtractString(string source, 
+        public static string ExtractString(string source,
                                            string beginDelim,
-                                           string endDelim, 
+                                           string endDelim,
                                            bool caseSensitive = false,
                                            bool allowMissingEndDelimiter = false,
                                            bool returnDelimiters = false)
@@ -228,7 +225,7 @@ namespace Westwind.Utilities
                     return source.Substring(at1 + beginDelim.Length, at2 - at1 - beginDelim.Length);
                 else
                     return source.Substring(at1, at2 - at1 + endDelim.Length);
-            }   
+            }
 
             return string.Empty;
         }
@@ -243,9 +240,9 @@ namespace Westwind.Utilities
         /// </param>
         /// <param name="beginDelim"></param>
         /// <param name="endDelim">
-        /// ending delimiter
+        ///  ending delimiter 
         /// </param>
-        /// <param name="CaseInSensitive"></param>
+        /// <param name="caseSensitive"></param>
         /// <returns>String</returns>
         public static string ExtractString(string source, string beginDelim, string endDelim, bool caseSensitive)
         {
@@ -259,7 +256,7 @@ namespace Westwind.Utilities
         /// <param name="source">
         /// Input String to work on
         /// </param>
-        /// <param name="StartDelim">
+        /// <param name="beginDelim">
         /// Beginning delimiter
         /// </param>
         /// <param name="endDelim">
@@ -270,7 +267,6 @@ namespace Westwind.Utilities
         {
             return ExtractString(source, beginDelim, endDelim, false, false);
         }
-
 
         /// <summary>
         /// String replace function that support
@@ -374,10 +370,7 @@ namespace Westwind.Utilities
                 if (match == textToTrim ||
                     (caseInsensitive && match.ToLower() == textToTrim.ToLower()))
                 {
-                    if (text.Length <= match.Length)
-                        text = "";
-                    else
-                        text = text.Substring(textToTrim.Length);
+                    text = text.Length <= match.Length ? "" : text.Substring(textToTrim.Length);
                 }
                 else
                     break;
@@ -393,7 +386,7 @@ namespace Westwind.Utilities
         /// <returns></returns>
         public static string Replicate(string input, int charCount)
         {
-            return new StringBuilder().Insert(0,"input",charCount).ToString();
+            return new StringBuilder().Insert(0, "input", charCount).ToString();
         }
 
         /// <summary>
@@ -402,7 +395,7 @@ namespace Westwind.Utilities
         /// <param name="charCount"></param>
         /// <param name="character"></param>
         /// <returns></returns>
-        public static string Replicate(char character,int charCount)
+        public static string Replicate(char character, int charCount)
         {
             return new string(character, charCount);
         }
@@ -410,25 +403,24 @@ namespace Westwind.Utilities
         /// <summary>
         /// Return a string in proper Case format
         /// </summary>
-        /// <param name="Input"></param>
+        /// <param name="input"></param>
         /// <returns></returns>
-        public static string ProperCase(string Input)
+        public static string ProperCase(string input)
         {
-            return Thread.CurrentThread.CurrentCulture.TextInfo.ToTitleCase(Input);
+            return Thread.CurrentThread.CurrentCulture.TextInfo.ToTitleCase(input);
         }
 
         /// <summary>
         /// Takes a phrase and turns it into CamelCase text.
         /// White Space, punctuation and separators are stripped
         /// </summary>
-        /// <param name="?"></param>
+        /// <param name="phrase"></param>
         public static string ToCamelCase(string phrase)
         {
-            if (phrase == null)
-                return string.Empty;
+            if (phrase == null) return string.Empty;
 
-            StringBuilder sb = new StringBuilder(phrase.Length);
-            
+            var sb = new StringBuilder(phrase.Length);
+
             // First letter is always upper case
             bool nextUpper = true;
 
@@ -440,14 +432,11 @@ namespace Westwind.Utilities
                     continue;
                 }
 
-                if (nextUpper)
-                    sb.Append(char.ToUpper(ch));
-                else
-                    sb.Append(char.ToLower(ch));
+                sb.Append(nextUpper ? char.ToUpper(ch) : char.ToLower(ch));
 
                 nextUpper = false;
             }
-            
+
             return sb.ToString();
         }
 
@@ -463,38 +452,38 @@ namespace Westwind.Utilities
         /// <returns></returns>
         public static string FromCamelCase(string camelCase)
         {
-            if (camelCase == null)
-                throw new ArgumentException("Null is not allowed for StringUtils.FromCamelCase");
+            if (camelCase == null) throw new ArgumentException("Null is not allowed for StringUtils.FromCamelCase");
 
-            StringBuilder sb = new StringBuilder(camelCase.Length + 10);
+            var sb = new StringBuilder(camelCase.Length + 10);
             bool first = true;
             char lastChar = '\0';
 
             foreach (char ch in camelCase)
             {
-                if ( !first && 
-                     ( char.IsUpper(ch) || 
-                       char.IsDigit(ch) && !char.IsDigit(lastChar)) )                     
+                if (!first &&
+                    (char.IsUpper(ch) || char.IsDigit(ch) && !char.IsDigit(lastChar)))
+                {
                     sb.Append(' ');
-                
+                }
+
                 sb.Append(ch);
                 first = false;
                 lastChar = ch;
             }
 
-            return sb.ToString(); ;
+            return sb.ToString();
         }
 
         /// <summary>
         /// Terminates a string with the given end string/character, but only if the
         /// value specified doesn't already exist and the string is not empty.
         /// </summary>
-        /// <param name="?"></param>
+        /// <param name="value"></param>
+        /// <param name="terminator"></param>
         /// <returns></returns>
         public static string TerminateString(string value, string terminator)
         {
-            if (string.IsNullOrEmpty(value) || value.EndsWith(terminator))
-                return value;
+            if (string.IsNullOrEmpty(value) || value.EndsWith(terminator)) return value;
 
             return value + terminator;
         }
@@ -507,13 +496,9 @@ namespace Westwind.Utilities
         /// <returns></returns>
         public static string TrimTo(string value, int charCount)
         {
-            if (value == null)
-                return string.Empty;
+            if (value == null) return string.Empty;
 
-            if (value.Length > charCount)
-                return value.Substring(0, charCount);
-
-            return value;
+            return value.Length > charCount ? value.Substring(0, charCount) : value;
         }
 
         /// <summary>
@@ -528,17 +513,17 @@ namespace Westwind.Utilities
             // normalize tabs to 3 spaces
             string text = code.Replace("\t", "   ");
 
-            string[] lines = text.Split(new string[3] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+            string[] lines = text.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
 
             // keep track of the smallest indent
             int minPadding = 1000;
 
             foreach (var line in lines)
             {
-                if (line.Length == 0)  // ignore blank lines
-                    continue;
-                
-                int count = 0;                
+                // ignore blank lines
+                if (line.Length == 0) continue;
+
+                int count = 0;
                 foreach (char chr in line)
                 {
                     if (chr == ' ' && count < minPadding)
@@ -546,18 +531,17 @@ namespace Westwind.Utilities
                     else
                         break;
                 }
-                if (count == 0)
-                    return code;
+                if (count == 0) return code;
 
                 minPadding = count;
             }
 
-            string strip = new String(' ', minPadding);
+            string strip = new string(' ', minPadding);
 
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
             foreach (var line in lines)
             {
-                sb.AppendLine(StringUtils.ReplaceStringInstance(line, strip, "", 1, false));
+                sb.AppendLine(ReplaceStringInstance(line, strip, "", 1, false));
             }
 
             return sb.ToString();
@@ -589,6 +573,7 @@ namespace Westwind.Utilities
         /// HTML into plain text, then creates an abstract.
         /// </summary>
         /// <param name="html"></param>
+        /// <param name="length"></param>
         /// <returns></returns>
         public static string HtmlAbstract(string html, int length)
         {
@@ -602,8 +587,8 @@ namespace Westwind.Utilities
         /// <param name="filename"></param>
         public static void LogString(string output, string filename)
         {
-            StreamWriter Writer = new StreamWriter(filename, true);
-            Writer.WriteLine(DateTime.Now.ToString() + " - " + output);
+            var Writer = new StreamWriter(filename, true);
+            Writer.WriteLine(DateTime.Now + " - " + output);
             Writer.Close();
         }
 
@@ -618,19 +603,18 @@ namespace Westwind.Utilities
             return Guid.NewGuid().ToString().GetHashCode().ToString("x");
         }
 
-
         /// <summary>
         /// Parses an string into an integer. If the value can't be parsed
         /// a default value is returned instead
         /// </summary>
         /// <param name="input"></param>
         /// <param name="defaultValue"></param>
-        /// <param name="formatProvider"></param>
+        /// <param name="numberFormat"></param>
         /// <returns></returns>
         public static int ParseInt(string input, int defaultValue, IFormatProvider numberFormat)
         {
             int val = defaultValue;
-            int.TryParse(input,NumberStyles.Any, numberFormat,out val);
+            int.TryParse(input, NumberStyles.Any, numberFormat, out val);
             return val;
         }
 
@@ -643,7 +627,7 @@ namespace Westwind.Utilities
         /// <returns></returns>
         public static int ParseInt(string input, int defaultValue)
         {
-            return ParseInt(input, defaultValue,CultureInfo.CurrentCulture.NumberFormat);
+            return ParseInt(input, defaultValue, CultureInfo.CurrentCulture.NumberFormat);
         }
 
         /// <summary>
@@ -656,7 +640,7 @@ namespace Westwind.Utilities
         public static decimal ParseDecimal(string input, decimal defaultValue, IFormatProvider numberFormat)
         {
             decimal val = defaultValue;
-            decimal.TryParse(input, NumberStyles.Any ,numberFormat, out val);
+            decimal.TryParse(input, NumberStyles.Any, numberFormat, out val);
             return val;
         }
 
@@ -669,16 +653,14 @@ namespace Westwind.Utilities
         public static string StripNonNumber(string input)
         {
             var chars = input.ToCharArray();
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
             foreach (var chr in chars)
             {
-                if (char.IsNumber(chr) || char.IsSeparator(chr))
-                    sb.Append(chr);
+                if (char.IsNumber(chr) || char.IsSeparator(chr)) sb.Append(chr);
             }
 
             return sb.ToString();
         }
-
 
         /// <summary>
         /// Creates a Stream from a string. Internally creates
@@ -689,7 +671,7 @@ namespace Westwind.Utilities
         /// <returns></returns>
         public static Stream StringToStream(string text, Encoding encoding)
         {
-            MemoryStream ms = new MemoryStream(text.Length * 2);
+            var ms = new MemoryStream(text.Length * 2);
             byte[] data = encoding.GetBytes(text);
             ms.Write(data, 0, data.Length);
             ms.Position = 0;
@@ -715,7 +697,7 @@ namespace Westwind.Utilities
         /// <returns></returns>
         public static string GetProperty(string propertyString, string key)
         {
-            return StringUtils.ExtractString(propertyString, "<" + key + ">", "</" + key + ">");
+            return ExtractString(propertyString, "<" + key + ">", "</" + key + ">");
         }
 
         /// <summary>
@@ -726,38 +708,32 @@ namespace Westwind.Utilities
         /// <param name="value"></param>
         /// <returns></returns>
         public static string SetProperty(string propertyString, string key, string value)
-        {            
-            string extract = StringUtils.ExtractString(propertyString,"<" + key + ">","</" + key + ">");
+        {
+            string extract = ExtractString(propertyString, "<" + key + ">", "</" + key + ">");
 
-            if (string.IsNullOrEmpty(value) && extract!= string.Empty)
-            {
-                return propertyString.Replace(extract,"");
-            }
+            if (string.IsNullOrEmpty(value) && extract != string.Empty) return propertyString.Replace(extract, "");
 
             string xmlLine = "<" + key + ">" + value + "</" + key + ">";
 
             // replace existing
-            if (extract != string.Empty)
-                return propertyString.Replace(extract,xmlLine);
-            
+            if (extract != string.Empty) return propertyString.Replace(extract, xmlLine);
+
             // add new
             return propertyString + xmlLine + "\r\n";
         }
 
         #region UrlEncoding and UrlDecoding without System.Web
+
         /// <summary>
         /// UrlEncodes a string without the requirement for System.Web
         /// </summary>
-        /// <param name="String"></param>
+        /// <param name="text"></param>
         /// <returns></returns>
         // [Obsolete("Use System.Uri.EscapeDataString instead")]
         public static string UrlEncode(string text)
         {
-            if (string.IsNullOrEmpty(text))
-                return string.Empty;
-
             // Sytem.Uri provides reliable parsing
-            return System.Uri.EscapeDataString(text);
+            return string.IsNullOrEmpty(text) ? string.Empty : Uri.EscapeDataString(text);
         }
 
         /// <summary>
@@ -770,8 +746,7 @@ namespace Westwind.Utilities
             // pre-process for + sign space formatting since System.Uri doesn't handle it
             // plus literals are encoded as %2b normally so this should be safe
             text = text.Replace("+", " ");
-            string decoded = System.Uri.UnescapeDataString(text);
-            return decoded;
+            return Uri.UnescapeDataString(text);
         }
 
         /// <summary>
@@ -784,17 +759,15 @@ namespace Westwind.Utilities
         {
             urlEncoded = "&" + urlEncoded + "&";
 
-            int Index = urlEncoded.IndexOf("&" + key + "=",StringComparison.OrdinalIgnoreCase);
-            if (Index < 0)
-                return string.Empty;
+            int index = urlEncoded.IndexOf("&" + key + "=", StringComparison.OrdinalIgnoreCase);
+            if (index < 0) return string.Empty;
 
-            int lnStart = Index + 2 + key.Length;
+            int lnStart = index + 2 + key.Length;
 
-            int Index2 = urlEncoded.IndexOf("&", lnStart);
-            if (Index2 < 0)
-                return string.Empty;
+            int index2 = urlEncoded.IndexOf("&", lnStart);
+            if (index2 < 0) return string.Empty;
 
-            return UrlDecode(urlEncoded.Substring(lnStart, Index2 - lnStart));
+            return UrlDecode(urlEncoded.Substring(lnStart, index2 - lnStart));
         }
 
         /// <summary>
@@ -820,10 +793,8 @@ namespace Westwind.Utilities
             return urlEncoded.TrimEnd('&');
         }
 
-
-
-        static char[] base36CharArray = "0123456789abcdefghijklmnopqrstuvwxyz".ToCharArray();            
-        static string base36Chars = "0123456789abcdefghijklmnopqrstuvwxyz";
+        private static readonly char[] Base36CharArray = "0123456789abcdefghijklmnopqrstuvwxyz".ToCharArray();
+        private const string Base36Chars = "0123456789abcdefghijklmnopqrstuvwxyz";
 
         /// <summary>
         /// Encodes an integer into a string by mapping to alpha and digits (36 chars)
@@ -837,16 +808,16 @@ namespace Westwind.Utilities
         {
             string returnValue = "";
             bool isNegative = value < 0;
-            if (isNegative)
-                value = value * -1;
-            
+
+            if (isNegative) value = value * -1;
+
             do
             {
-                returnValue = base36CharArray[value % base36CharArray.Length] + returnValue;
+                returnValue = Base36CharArray[value % Base36CharArray.Length] + returnValue;
                 value /= 36;
             } while (value != 0);
 
-            return isNegative ?  returnValue + "-" : returnValue;
+            return isNegative ? returnValue + "-" : returnValue;
         }
 
         /// <summary>
@@ -860,7 +831,7 @@ namespace Westwind.Utilities
             if (input.EndsWith("-"))
             {
                 isNegative = true;
-                input = input.Substring(0,input.Length-1);
+                input = input.Substring(0, input.Length - 1);
             }
 
             char[] arrInput = input.ToCharArray();
@@ -868,12 +839,11 @@ namespace Westwind.Utilities
             long returnValue = 0;
             for (long i = 0; i < arrInput.Length; i++)
             {
-                long valueindex = base36Chars.IndexOf(arrInput[i]);
+                long valueindex = Base36Chars.IndexOf(arrInput[i]);
                 returnValue += Convert.ToInt64(valueindex * Math.Pow(36, i));
             }
             return isNegative ? returnValue * -1 : returnValue;
         }
-
 
         #endregion
     }

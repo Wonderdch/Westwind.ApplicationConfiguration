@@ -2,7 +2,7 @@
 /*
  **************************************************************
  *  Author: Rick Strahl 
- *          © West Wind Technologies, 2009
+ *          ?West Wind Technologies, 2009
  *          http://www.west-wind.com/
  * 
  * Created: 09/12/2009
@@ -30,9 +30,6 @@
  **************************************************************  
 */
 #endregion
-
-using System;
-using System.Reflection;
 
 namespace Westwind.Utilities.Configuration
 {
@@ -80,7 +77,8 @@ namespace Westwind.Utilities.Configuration
         /// </summary>
         /// <param name="config"></param>
         /// <returns></returns>
-        bool Read(AppConfiguration config);        
+        bool Read(AppConfiguration config);    
+        
         T Read<T>(string xml)
             where T: AppConfiguration, new();
 

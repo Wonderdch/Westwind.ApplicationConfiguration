@@ -2,7 +2,7 @@
 /*
  **************************************************************
  *  Author: Rick Strahl 
- *          © West Wind Technologies, 2009-2013
+ *          ?West Wind Technologies, 2009-2013
  *          http://www.west-wind.com/
  * 
  * Created: 09/12/2009
@@ -32,7 +32,6 @@
 #endregion
 
 using System;
-using System.Reflection;
 using Westwind.Utilities.Configuration.Properties;
 
 namespace Westwind.Utilities.Configuration
@@ -53,43 +52,27 @@ namespace Westwind.Utilities.Configuration
         /// <summary>
         /// Displays error information when results fail.
         /// </summary>
-        public virtual string ErrorMessage
-        {
-            get { return _ErrorMessage; }
-            set { _ErrorMessage = value; }
-        }
-        private string _ErrorMessage = string.Empty;
+        public virtual string ErrorMessage { get; set; } = string.Empty;
 
 
         /// <summary>
         /// A comma delimiter list of property names that are 
         /// to be encrypted when persisted to the store
         /// </summary>
-        public virtual string PropertiesToEncrypt
-        {
-            get { return _PropertiesToEncrypt; }
-            set { _PropertiesToEncrypt = value; }
-        }
-        private string _PropertiesToEncrypt = string.Empty;
+        public virtual string PropertiesToEncrypt { get; set; } = string.Empty;
 
         /// <summary>
         /// The encryption key to encrypt the fields 
         /// set with FieldsToEncrypt
         /// </summary>
-        public virtual string EncryptionKey
-        {
-            get { return _EncryptionKey; }
-            set { _EncryptionKey = value; }
-        }
-        private string _EncryptionKey = "x@3|zg?4%ui*";
+        public virtual string EncryptionKey { get; set; } = "x@3|zg?4%ui*";
 
         /// <summary>
         /// Optional Section name that can differentiate groups of config
         /// values in multi-section files like Config files.
         /// </summary>
-        public string ConfigurationSection {get; set; }
+        public string ConfigurationSection { get; set; }
 
-        
         /// <summary>
         /// Reads a configurations settings from the configuration store
         /// into a new existing instance.
@@ -98,7 +81,6 @@ namespace Westwind.Utilities.Configuration
         /// <returns></returns>
         public abstract T Read<T>()
                 where T : AppConfiguration, new();
-
 
         /// <summary>
         /// Reads configuration settings from the store into a passed
@@ -128,8 +110,8 @@ namespace Westwind.Utilities.Configuration
         public virtual T Read<T>(string xml)
             where T : AppConfiguration, new()
         {
-            if (string.IsNullOrEmpty((xml)))
-            {                
+            if (string.IsNullOrEmpty(xml))
+            {
                 return null;
             }
 
@@ -143,11 +125,13 @@ namespace Westwind.Utilities.Configuration
                 SetError(ex);
                 return null;
             }
+
             if (result != null)
                 DecryptFields(result);
 
             return result;
         }
+
         /// <summary>
         /// Reads data into configuration from an XML string into a passed 
         /// instance of the a configuration object.
@@ -157,7 +141,7 @@ namespace Westwind.Utilities.Configuration
         /// <returns>true or false</returns>
         public virtual bool Read(AppConfiguration config, string xml)
         {
-            TAppConfiguration newConfig = null;
+            TAppConfiguration newConfig;
 
             // if no data was passed leave the object
             // in its initial state.
@@ -178,15 +162,11 @@ namespace Westwind.Utilities.Configuration
                 SetError(ex);
                 return false;
             }
-            if (newConfig != null)
-            {
-                DecryptFields(newConfig);
-                DataUtils.CopyObjectData(newConfig, config, "Provider,ErrorMessage");
-                return true;
-            }
-            return false;
-        }
 
+            DecryptFields(newConfig);
+            DataUtils.CopyObjectData(newConfig, config, "Provider,ErrorMessage");
+            return true;
+        }
 
         /// <summary>
         /// Writes the current configuration information to an
@@ -222,13 +202,13 @@ namespace Westwind.Utilities.Configuration
         /// <returns></returns>
         public virtual void EncryptFields(AppConfiguration config)
         {
-            if (string.IsNullOrEmpty(PropertiesToEncrypt))
-                return;
+            if (string.IsNullOrEmpty(PropertiesToEncrypt)) return;
 
+            // ÎªÁË±ÜÃâ³öÏÖ´íÎóµÄ²¿·ÖÆ¥Åä£¬×÷ÕßÔÚÊ×Î²Ìí¼Ó , ºÅ£¬ÏÂÃæ Contains ÅÐ±ðÊ±ÓÃÉÏÁË
             string encryptFieldList = "," + PropertiesToEncrypt.ToLower() + ",";
-            string[] fieldTokens = encryptFieldList.Split(new char[1] {','}, StringSplitOptions.RemoveEmptyEntries);            
+            string[] fieldTokens = encryptFieldList.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 
-            foreach(string fieldName in fieldTokens)
+            foreach (string fieldName in fieldTokens)
             {
                 // Encrypt the field if in list
                 if (encryptFieldList.Contains("," + fieldName.ToLower() + ","))
@@ -236,17 +216,17 @@ namespace Westwind.Utilities.Configuration
                     object val = string.Empty;
                     try
                     {
-                       val = ReflectionUtils.GetPropertyEx(config, fieldName);
+                        val = ReflectionUtils.GetPropertyEx(config, fieldName);
                     }
                     catch
                     {
-                        throw new ArgumentException(string.Format("{0}: {1}",Resources.InvalidEncryptionPropertyName,fieldName));
+                        throw new ArgumentException($"{Resources.InvalidEncryptionPropertyName}: {fieldName}");
                     }
 
                     // only encrypt string values
                     var strVal = val as string;
-                    if (string.IsNullOrEmpty(strVal))
-                        continue;
+
+                    if (string.IsNullOrEmpty(strVal)) continue;
 
                     val = Encryption.EncryptString(strVal, EncryptionKey);
                     try
@@ -255,7 +235,7 @@ namespace Westwind.Utilities.Configuration
                     }
                     catch
                     {
-                        throw new ArgumentException(string.Format("{0}: {1}", Resources.InvalidEncryptionPropertyName, fieldName));
+                        throw new ArgumentException($"{Resources.InvalidEncryptionPropertyName}: {fieldName}");
                     }
                 }
             }
@@ -306,8 +286,6 @@ namespace Westwind.Utilities.Configuration
             }
         }
 
-
-
         /// <summary>
         /// Sets an error message when an error occurs
         /// </summary>
@@ -345,5 +323,4 @@ namespace Westwind.Utilities.Configuration
             return Activator.CreateInstance(typeof(TAppConfiguration)) as TAppConfiguration;
         }
     }
-
 }

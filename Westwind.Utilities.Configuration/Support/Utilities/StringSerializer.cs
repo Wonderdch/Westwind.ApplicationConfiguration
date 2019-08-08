@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 
 namespace Westwind.Utilities
 {
@@ -52,21 +50,17 @@ namespace Westwind.Utilities
             if (objectToSerialize == null)
                 return "null";
 
-            var properties =
-                objectToSerialize.GetType()
-                                 .GetProperties(BindingFlags.Instance | BindingFlags.Public);
+            var properties = objectToSerialize.GetType()
+                .GetProperties(BindingFlags.Instance | BindingFlags.Public);
             //.OrderBy(prop => prop.Name.ToLower())
             //.ToArray();
 
             var values = new List<string>();
 
-            for (int i = 0; i < properties.Length; i++)
+            foreach (var pi in properties)
             {
-                var pi = properties[i];
-
                 // don't store read/write-only data
-                if (!pi.CanRead && !pi.CanWrite)
-                    continue;
+                if (!pi.CanRead && !pi.CanWrite) continue;
 
                 object value = pi.GetValue(objectToSerialize, null);
 
@@ -75,20 +69,20 @@ namespace Westwind.Utilities
                 {
                     if (value is string)
                     {
-                        stringValue = (string)value;
-                        if (stringValue.Contains(separator))
-                            stringValue = stringValue.Replace(separator, Seperator_Replace_String);
+                        stringValue = (string) value;
+                        if (stringValue.Contains(separator)) stringValue = stringValue.Replace(separator, Seperator_Replace_String);
                     }
                     else
+                    {
                         stringValue = ReflectionUtils.TypedValueToString(value, unsupportedReturn: "null");
+                    }
                 }
 
                 values.Add(stringValue);
             }
 
-            if (values.Count < 0)
-                // empty object (no properties)
-                return string.Empty;
+            // empty object (no properties)
+            if (values.Count < 0) return string.Empty;
 
             return string.Join(separator, values.ToArray());
         }
@@ -102,11 +96,9 @@ namespace Westwind.Utilities
         /// <returns></returns>
         public static object DeserializeObject(string serialized, Type type, string separator = null)
         {
-            if (serialized == "null")
-                return null;
+            if (serialized == "null") return null;
 
-            if (separator == null)
-                separator = "|";
+            if (separator == null) separator = "|";
 
             object inst = ReflectionUtils.CreateInstanceFromType(type);
             var properties = inst.GetType()

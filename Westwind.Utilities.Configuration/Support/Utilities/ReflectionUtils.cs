@@ -2,7 +2,7 @@
 /*
  **************************************************************
  *  Author: Rick Strahl 
- *          © West Wind Technologies, 2008 - 2009
+ *          ?West Wind Technologies, 2008 - 2009
  *          http://www.west-wind.com/
  * 
  * Created: 09/08/2008
@@ -93,10 +93,9 @@ namespace Westwind.Utilities
         /// <returns></returns>
         private static object GetPropertyInternal(object Parent, string Property)
         {
-            if (Property == "this" || Property == "me")
-                return Parent;
+            if (Property == "this" || Property == "me") return Parent;
 
-            object result = null;
+            object result;
             string pureProperty = Property;
             string indexes = null;
             bool isArrayOrCollection = false;
@@ -111,38 +110,35 @@ namespace Westwind.Utilities
 
             // Get the member
             MemberInfo member = Parent.GetType().GetMember(pureProperty, ReflectionUtils.MemberAccess)[0];
-            if (member.MemberType == MemberTypes.Property)
-                result = ((PropertyInfo)member).GetValue(Parent, null);
-            else
-                result = ((FieldInfo)member).GetValue(Parent);
+            result = member.MemberType == MemberTypes.Property
+                ? ((PropertyInfo) member).GetValue(Parent, null)
+                : ((FieldInfo) member).GetValue(Parent);
 
-            if (isArrayOrCollection)
+            if (!isArrayOrCollection) return result;
+
+            indexes = indexes.Replace("[", string.Empty).Replace("]", string.Empty);
+
+            if (result is Array)
             {
-                indexes = indexes.Replace("[", string.Empty).Replace("]", string.Empty);
-
-                if (result is Array)
+                var index = -1;
+                int.TryParse(indexes, out index);
+                result = CallMethod(result, "GetValue", index);
+            }
+            else if (result is ICollection)
+            {
+                if (indexes.StartsWith("\""))
                 {
-                    int Index = -1;
-                    int.TryParse(indexes, out Index);
-                    result = CallMethod(result, "GetValue", Index);
+                    // String Index
+                    indexes = indexes.Trim('\"');
+                    result = CallMethod(result, "get_Item", indexes);
                 }
-                else if (result is ICollection)
+                else
                 {
-                    if (indexes.StartsWith("\""))
-                    {
-                        // String Index
-                        indexes = indexes.Trim('\"');
-                        result = CallMethod(result, "get_Item", indexes);
-                    }
-                    else
-                    {
-                        // assume numeric index
-                        int index = -1;
-                        int.TryParse(indexes, out index);
-                        result = CallMethod(result, "get_Item", index);
-                    }
+                    // assume numeric index
+                    var index = -1;
+                    int.TryParse(indexes, out index);
+                    result = CallMethod(result, "get_Item", index);
                 }
-
             }
 
             return result;
@@ -234,8 +230,6 @@ namespace Westwind.Utilities
         /// <returns></returns>
         public static object GetPropertyEx(object Parent, string Property)
         {
-            Type type = Parent.GetType();
-
             int at = Property.IndexOf(".");
             if (at < 0)
             {
@@ -822,8 +816,6 @@ namespace Westwind.Utilities
             return result;
         }
     }
-
-
 }
 
 

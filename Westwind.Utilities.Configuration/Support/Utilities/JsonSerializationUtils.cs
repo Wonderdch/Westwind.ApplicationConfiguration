@@ -2,7 +2,7 @@
 /*
  **************************************************************
  *  Author: Rick Strahl 
- *          © West Wind Technologies, 2008 - 2009
+ *          ?West Wind Technologies, 2008 - 2009
  *          http://www.west-wind.com/
  * 
  * Created: 09/08/2008
@@ -271,8 +271,7 @@ namespace Westwind.Utilities
                     }
                 }
 
-                if (json == null)
-                    return null;
+                if (json == null) return null;
 
                 FormattingType = ReflectionUtils.GetTypeFromName("Newtonsoft.Json.Formatting");
                 JsonTextReaderType = ReflectionUtils.GetTypeFromName("Newtonsoft.Json.JsonTextReader");

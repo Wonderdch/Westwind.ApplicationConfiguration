@@ -2,7 +2,7 @@
 /*
  **************************************************************
  *  Author: Rick Strahl 
- *          © West Wind Technologies, 2009-2013
+ *          ?West Wind Technologies, 2009-2013
  *          http://www.west-wind.com/
  * 
  * Created: 09/12/2009
@@ -43,31 +43,26 @@ namespace Westwind.Utilities.Configuration
     public class JsonFileConfigurationProvider<TAppConfiguration> : ConfigurationProviderBase<TAppConfiguration>
         where TAppConfiguration : AppConfiguration, new()
     {
-
         /// <summary>
         /// Optional - the Configuration file where configuration settings are
         /// stored in. If not specified uses the default Configuration Manager
         /// and its default store.
         /// </summary>
-        public string JsonConfigurationFile
-        {
-            get { return _JsonConfigurationFile; }
-            set { _JsonConfigurationFile = value; }
-        }
-        private string _JsonConfigurationFile = string.Empty;
-
-
+        public string JsonConfigurationFile { get; set; } = string.Empty;
 
         public override bool Read(AppConfiguration config)
         {
             var newConfig = JsonSerializationUtils.DeserializeFromFile(JsonConfigurationFile, typeof(TAppConfiguration)) as TAppConfiguration;
+
             if (newConfig == null)
             {
-                if (Write(config))
-                    return true;
+                if (Write(config)) return true;
+
                 return false;
             }
+
             DecryptFields(newConfig);
+
             DataUtils.CopyObjectData(newConfig, config, "Provider,ErrorMessage");
 
             return true;
@@ -81,8 +76,8 @@ namespace Westwind.Utilities.Configuration
         public override TAppConfig Read<TAppConfig>()
         {
             var result = JsonSerializationUtils.DeserializeFromFile(JsonConfigurationFile, typeof(TAppConfig)) as TAppConfig;
-            if (result != null)
-                DecryptFields(result);
+
+            if (result != null) DecryptFields(result);
 
             return result;
         }
